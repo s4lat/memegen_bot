@@ -1,22 +1,32 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-from telegram import InputMediaPhoto
-import cfg, utils
+from telegram import InputMediaPhoto, ParseMode
+import cfg, utils, logging
+
+logging.basicConfig(filename='log.log',level=logging.INFO)
 
 updater = Updater(token=cfg.TOKEN, use_context=True)
 dispatcher = updater.dispatcher
 
 def start(update, context):
-	context.bot.send_message(chat_id=update.effective_chat.id, text="Help info")
+	logging.info('/start or /help')
+	context.bot.send_message(chat_id=update.effective_chat.id, 
+		text=cfg.HELP, parse_mode=ParseMode.MARKDOWN)
 
 def show_list(update, context):
-	f = open('result.png', 'rb')
+	logging.info('/show_list')
 
+	paths = cfg.IMAGES["list"]["PATHS"]
 
-	with open('images/hm.jpg', 'rb') as f1, open('result.png', 'rb') as f2:
-		context.bot.send_media_group(chat_id=update.effective_chat.id,
-			media=[InputMediaPhoto(f1), InputMediaPhoto(f2)])
+	images = []
+	for path in paths:
+		with open(path, 'rb') as f:
+			images.append(InputMediaPhoto(f))
+
+	context.bot.send_media_group(chat_id=update.effective_chat.id,
+		media=images)
 
 def msgCallback(update, context):
+	logging.info(update.message.text)
 	args = update.message.text.split()
 	if len(args) < 2:
 		context.bot.send_message(chat_id=update.effective_chat.id, 
@@ -39,7 +49,7 @@ def msgCallback(update, context):
 			text='Нет картинки "%s"' % args[0])
 
 
-start_handler = CommandHandler('start', start)
+start_handler = CommandHandler(['start', 'help'], start)
 dispatcher.add_handler(start_handler)
 
 list_handler = CommandHandler('list', show_list)

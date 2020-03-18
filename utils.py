@@ -19,22 +19,27 @@ def generate_image(img, txt):
 		fontsize += 1
 		fnt = ImageFont.truetype(cfg.FONT, fontsize)
 
-	max_width = fnt.getsize(longest_line)[0]+20
+	max_width = fnt.getsize(longest_line)[0]+30
 	buttons = []
 	for l in txt:
 		text_size = fnt.getsize(l)
 
-		button_size = (max_width, text_size[1]+10)
+		button_size = (max_width, text_size[1]+20)
 		button_im = Image.new('RGBA', button_size)
 
 		d = ImageDraw.Draw(button_im)
 		w, h = text_size
-		d.text(((max_width-w)/2, 0),
+		x, y = (max_width-w)/2, 0
+		d.text((x-1, y-1), l, font=fnt, fill='black')
+		d.text((x+1, y-1), l, font=fnt, fill='black')
+		d.text((x-1, y+1), l, font=fnt, fill='black')
+		d.text((x+1, y+1), l, font=fnt, fill='black')
+		d.text((x, y),
 			l, font=fnt, fill=(255, 255, 255, 255))
 
 		buttons.append(button_im)
 
-	button_width = max_width
+	button_width = max_width+10
 	button_height = 0
 	buttons_height = []
 	for b in buttons:
@@ -54,5 +59,8 @@ def generate_image(img, txt):
 	b.seek(0)
 	return b
 
-# msg = "Превед "
-# generate_image(cfg.IMAGES['hello'], msg, (0, 0))
+# msg = "Где в слове некст написано следующая суббота?"
+# b = generate_image(cfg.IMAGES['1'], msg)
+
+# with open('result.png', 'wb') as f:
+# 	f.write(b.read())
